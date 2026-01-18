@@ -1,0 +1,42 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscfg
+*.sln.docstates
+
+# Build Results
+[Bb]in/
+[Oo]bj/
+*.bak
+*.log
+*.vsix
+TestResults/
+artifacts/
+publish/
+out/
+
+# NuGet
+packages/
+*.nuget.log
+.nuget/NuGetScratch/
+project.assets.json
+project.nuget.cache
+*.csproj.nuget.*
+*.g.props
+*.g.targets
+
+# Rider
+.idea/
+
+# Local configuration files
+appsettings.Development.json
+Properties/launchSettings.json
+*.pubxml
+
+# Certificates
+*.pfx
+
+# Miscellaneous
+Thumbs.db
+.DS_Store
