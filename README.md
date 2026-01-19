@@ -7,9 +7,6 @@
   <img src="https://img.shields.io/badge/Status-Production%20Ready-brightgreen" alt="Status">
 </div>
 
-![Uploading ERD.png…]()
-![Uploading image.png…]()
-
 
 
 ## 📋 Table of Contents
