@@ -1,0 +1,13 @@
+<div class="notifications-container">
+  @for (notification of notifications$ | async; track notification.id) {
+    <div [ngClass]="getNotificationClass(notification.type)" class="notification-item">
+      <div class="notification-content">
+        <span>{{ notification.message }}</span>
+      </div>
+      <button class="notification-close" (click)="closeNotification(notification.id)">
+        &times;
+      </button>
+    </div>
+  }
+</div>
+

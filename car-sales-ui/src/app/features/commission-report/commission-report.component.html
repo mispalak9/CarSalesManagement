@@ -1,0 +1,327 @@
+<div class="container">
+  <div class="header-actions">
+    <button (click)="exportToCSV()" class="btn btn-secondary">
+      📊 Export to CSV
+    </button>
+    <button (click)="refreshReports()" class="btn btn-secondary">
+      🔄 Refresh
+    </button>
+  </div>
+
+  <div class="filter-section">
+    <form [formGroup]="filterForm" class="filter-form">
+      <div class="filter-group">
+        <label for="month">Month</label>
+        <input
+          type="number"
+          id="month"
+          formControlName="month"
+          class="filter-input"
+          min="1"
+          max="12"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="year">Year</label>
+        <input
+          type="number"
+          id="year"
+          formControlName="year"
+          class="filter-input"
+          min="2000"
+          [attr.max]="maxYear"
+        />
+      </div>
+
+      <div class="filter-divider"></div>
+
+      <div class="filter-group">
+        <label for="singleSalesmanId">Salesman ID (for single report)</label>
+        <input
+          type="number"
+          id="singleSalesmanId"
+          formControlName="singleSalesmanId"
+          class="filter-input"
+          placeholder="Enter salesman ID"
+          min="1"
+        />
+      </div>
+
+      <button
+        type="button"
+        (click)="loadSalesmanReport()"
+        [disabled]="singleLoading"
+        class="btn btn-primary"
+      >
+        @if (singleLoading) { Loading... } @else { Load Salesman Report }
+      </button>
+
+      <div class="filter-divider"></div>
+
+      <div class="filter-group">
+        <label for="salesmanFilter">Salesman Name (filter all reports)</label>
+        <input
+          type="text"
+          id="salesmanFilter"
+          formControlName="salesmanFilter"
+          class="filter-input"
+          placeholder="Search salesman..."
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="minCommission">Min Commission</label>
+        <input
+          type="number"
+          id="minCommission"
+          formControlName="minCommission"
+          class="filter-input"
+          placeholder="Minimum amount"
+          min="0"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="maxCommission">Max Commission</label>
+        <input
+          type="number"
+          id="maxCommission"
+          formControlName="maxCommission"
+          class="filter-input"
+          placeholder="Maximum amount"
+          min="0"
+        />
+      </div>
+    </form>
+  </div>
+
+  @if (singleReport) {
+    <div class="single-report-section">
+      <div class="section-header">
+        <h2>{{ singleReport.salesmanName }} - {{ singleReport.month }}/{{ singleReport.year }}</h2>
+        <button (click)="clearSingleReport()" class="btn btn-secondary">Close</button>
+      </div>
+
+      <div class="report-grid">
+        <div class="report-stat">
+          <span class="stat-label">Total Sales Amount</span>
+          <span class="stat-value">{{ formatCurrency(singleReport.totalSalesAmount) }}</span>
+        </div>
+        <div class="report-stat">
+          <span class="stat-label">Fixed Commission</span>
+          <span class="stat-value">{{ formatCurrency(singleReport.totalFixedCommission || 0) }}</span>
+        </div>
+        <div class="report-stat">
+          <span class="stat-label">Class Commission</span>
+          <span class="stat-value">{{ formatCurrency(singleReport.totalClassCommission || 0) }}</span>
+        </div>
+        <div class="report-stat">
+          <span class="stat-label">Bonus Commission</span>
+          <span class="stat-value">{{ formatCurrency(singleReport.bonusCommission) }}</span>
+        </div>
+        <div class="report-stat total">
+          <span class="stat-label">Total Commission</span>
+          <span class="stat-value">{{ formatCurrency(singleReport.totalCommission) }}</span>
+        </div>
+      </div>
+
+      @if (singleReport.brandCommissions && singleReport.brandCommissions.length > 0) {
+        <div class="details-section">
+          <h3>Brand-wise Commission</h3>
+          <div class="commission-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Brand</th>
+                  <th>Fixed Commission</th>
+                  <th>Cars Sold</th>
+                  <th>Total Amount</th>
+                  <th>Commission</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (brand of singleReport.brandCommissions; track brand.brandID) {
+                  <tr>
+                    <td>{{ brand.brandName }}</td>
+                    <td>{{ formatCurrency(brand.fixedCommission) }}</td>
+                    <td>{{ brand.numberOfCarsSold }}</td>
+                    <td>{{ formatCurrency(brand.totalAmount) }}</td>
+                    <td class="amount">{{ formatCurrency(brand.commission) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      @if (singleReport.classCommissions && singleReport.classCommissions.length > 0) {
+        <div class="details-section">
+          <h3>Class-wise Commission</h3>
+          <div class="commission-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Commission %</th>
+                  <th>Cars Sold</th>
+                  <th>Total Amount</th>
+                  <th>Commission</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (cls of singleReport.classCommissions; track cls.classID) {
+                  <tr>
+                    <td>{{ cls.className }}</td>
+                    <td>{{ formatPercentage(cls.commissionPercentage) }}</td>
+                    <td>{{ cls.numberOfCarsSold }}</td>
+                    <td>{{ formatCurrency(cls.totalAmount) }}</td>
+                    <td class="amount">{{ formatCurrency(cls.commission) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (isLoading) {
+    <div class="loading">
+      <p>Loading commission reports...</p>
+    </div>
+  }
+  @else if (filteredReports.length === 0) {
+    <div class="no-data">
+      <p>No commission reports found</p>
+    </div>
+  }
+  @else {
+    <div class="reports-section">
+      <div class="reports-summary">
+        <div class="summary-card">
+          <h3>Total Reports</h3>
+          <p class="summary-value">{{ filteredReports.length }}</p>
+        </div>
+        <div class="summary-card">
+          <h3>Total Commission</h3>
+          <p class="summary-value">{{ formatCurrency(getTotalCommission()) }}</p>
+        </div>
+        <div class="summary-card">
+          <h3>Average Commission</h3>
+          <p class="summary-value">{{ formatCurrency(getAverageCommission()) }}</p>
+        </div>
+      </div>
+
+      <div class="reports-list">
+        @for (report of filteredReports; track report.commissionReportID) {
+          <div class="report-card">
+            <div class="report-header" (click)="selectReport(report)">
+              <div class="report-main">
+                <h3>{{ report.salesmanName }}</h3>
+                <p class="report-period">{{ report.month }}/{{ report.year }}</p>
+              </div>
+              <div class="report-summary">
+                <div class="summary-item">
+                  <span class="label">Total Sales</span>
+                  <span class="value">{{ formatCurrency(report.totalSalesAmount) }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="label">Total Commission</span>
+                  <span class="value commission">{{ formatCurrency(report.totalCommission) }}</span>
+                </div>
+              </div>
+              <span class="expand-icon" [class.expanded]="selectedReport?.commissionReportID === report.commissionReportID">
+                ▼
+              </span>
+            </div>
+
+            @if (selectedReport?.commissionReportID === report.commissionReportID) {
+              <div class="report-details">
+                <div class="details-section">
+                  <h4>Commission Breakdown</h4>
+                  <div class="breakdown-grid">
+                    <div class="breakdown-item">
+                      <span class="label">Fixed Commission</span>
+                      <span class="value">{{ formatCurrency(report.totalFixedCommission) }}</span>
+                    </div>
+                    <div class="breakdown-item">
+                      <span class="label">Class Commission</span>
+                      <span class="value">{{ formatCurrency(report.totalClassCommission) }}</span>
+                    </div>
+                    <div class="breakdown-item">
+                      <span class="label">Bonus Commission</span>
+                      <span class="value">{{ formatCurrency(report.bonusCommission) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                @if (report.brandCommissions && report.brandCommissions.length > 0) {
+                  <div class="details-section">
+                    <h4>Brand-wise Commission</h4>
+                    <div class="commission-table">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Brand</th>
+                            <th>Fixed Commission</th>
+                            <th>Cars Sold</th>
+                            <th>Total Amount</th>
+                            <th>Commission</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (brand of report.brandCommissions; track brand.brandID) {
+                            <tr>
+                              <td>{{ brand.brandName }}</td>
+                              <td>{{ formatCurrency(brand.fixedCommission) }}</td>
+                              <td>{{ brand.numberOfCarsSold }}</td>
+                              <td>{{ formatCurrency(brand.totalAmount) }}</td>
+                              <td class="amount">{{ formatCurrency(brand.commission) }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                }
+
+                @if (report.classCommissions && report.classCommissions.length > 0) {
+                  <div class="details-section">
+                    <h4>Class-wise Commission</h4>
+                    <div class="commission-table">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Class</th>
+                            <th>Commission %</th>
+                            <th>Cars Sold</th>
+                            <th>Total Amount</th>
+                            <th>Commission</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (cls of report.classCommissions; track cls.classID) {
+                            <tr>
+                              <td>{{ cls.className }}</td>
+                              <td>{{ formatPercentage(cls.commissionPercentage) }}</td>
+                              <td>{{ cls.numberOfCarsSold }}</td>
+                              <td>{{ formatCurrency(cls.totalAmount) }}</td>
+                              <td class="amount">{{ formatCurrency(cls.commission) }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
