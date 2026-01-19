@@ -32,8 +32,8 @@ Car Sales Management System is a full-stack web application developed using .NET
 ## Tech Stack
 
 - Backend: .NET Core 8, C#
-- Frontend: Angular 14
-- Database: Microsoft SQL Server
+- Frontend: ⚠️ Note: The frontend is implemented using Angular 21 (latest stable) instead of Angular 14 to leverage improved performance and long-term support. The architecture and concepts remain fully compatible with Angular 14.
+- Database: MSSql (Microsoft SQL Server)
 - Data Access: Dapper
 - Authentication: JWT
 - Tools: Git, GitHub, Swagger, Postman
@@ -65,8 +65,8 @@ CarSalesManagement/
 ## Database
 
 The Database folder contains:
-- schema.sql → Table creation scripts
-- seed-data.sql → Initial insert scripts
+- schema → Table creation scripts
+- Stored Procedure → Initial insStored Procedure scripts
 - ERD.png → Entity Relationship Diagram
 
 ![ER Diagram](Images/ERD.png)
@@ -87,7 +87,7 @@ The Database folder contains:
 2. Install dependencies:
    npm install
 3. Run application:
-   ng serve
+   ng serve or npm start
 
 ---
 
