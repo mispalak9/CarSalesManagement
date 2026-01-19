@@ -25,13 +25,6 @@
 </p>
 
 
-
-
-
-
-
-
-
 Car Sales Management System is a full-stack web application developed using .NET Core for backend, Angular 14 for frontend, and Microsoft SQL Server as the database. The system manages car models, users, roles, and sales commission calculations.
 
 ---
@@ -65,9 +58,6 @@ CarSalesManagement/
 ├── API/            → .NET Core Backend
 ├── UI/             → Angular Frontend
 ├── Database/
-│   ├── schema.sql
-│   ├── seed-data.sql
-│   └── ERD.png
 └── README.md
 
 ---
