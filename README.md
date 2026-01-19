@@ -7,12 +7,19 @@
   <img src="https://img.shields.io/badge/Status-Production%20Ready-brightgreen" alt="Status">
 </div>
 
-<img src="Images/1.png" width="200" alt="Diagram 1">
-<img src="Images/2.png" width="200" alt="Diagram 2">
-<img src="Images/3.png" width="200" alt="Diagram 3">
-<img src="Images/4.png" width="200" alt="Diagram 4">
-<img src="Images/5.png" width="200" alt="Diagram 5">
-<img src="Images/6.png" width="200" alt="Diagram 6">
+<table>
+<tr>
+<td><img src="Images/1.png" width="200"></td>
+<td><img src="Images/2.png" width="200"></td>
+<td><img src="Images/3.png" width="200"></td>
+</tr>
+<tr>
+<td><img src="Images/4.png" width="200"></td>
+<td><img src="Images/5.png" width="200"></td>
+<td><img src="Images/6.png" width="200"></td>
+</tr>
+</table>
+
 
 
 
