@@ -57,7 +57,7 @@ The Database folder contains:
 - seed-data.sql → Initial insert scripts
 - ERD.png → Entity Relationship Diagram
 
-![ER Diagram](https://raw.githubusercontent.com/mispalak9/CarSalesManagement/main/Images/ERD.png)
+![ER Diagram](Images/ERD.png)
 
 ---
 
