@@ -19,10 +19,10 @@ public class AuthRepository : IAuthRepository
     {
         using var connection = _connectionFactory.CreateConnection();
         
-        var sql = @"SELECT u.*, s.SalesmanID, s.SalesmanName, s.SalesmanCode, s.Email, s.Phone
-                    FROM Users u
-                    LEFT JOIN Salesmen s ON u.SalesmanID = s.SalesmanID
-                    WHERE u.Username = @Username AND u.IsActive = 1";
+        const string sql = @"SELECT u.*, s.SalesmanID, s.SalesmanName, s.SalesmanCode, s.Email, s.Phone
+                            FROM Users u
+                            LEFT JOIN Salesmen s ON u.SalesmanID = s.SalesmanID
+                            WHERE u.Username = @Username AND u.IsActive = 1";
 
         var result = await connection.QueryAsync<User, Salesman?, User>(
             sql,
@@ -42,10 +42,10 @@ public class AuthRepository : IAuthRepository
     {
         using var connection = _connectionFactory.CreateConnection();
         
-        var sql = @"SELECT u.*, s.SalesmanID, s.SalesmanName, s.SalesmanCode, s.Email, s.Phone
-                    FROM Users u
-                    LEFT JOIN Salesmen s ON u.SalesmanID = s.SalesmanID
-                    WHERE u.UserID = @UserId AND u.IsActive = 1";
+        const string sql = @"SELECT u.*, s.SalesmanID, s.SalesmanName, s.SalesmanCode, s.Email, s.Phone
+                            FROM Users u
+                            LEFT JOIN Salesmen s ON u.SalesmanID = s.SalesmanID
+                            WHERE u.UserID = @UserId AND u.IsActive = 1";
 
         var result = await connection.QueryAsync<User, Salesman?, User>(
             sql,
@@ -65,7 +65,7 @@ public class AuthRepository : IAuthRepository
     {
         using var connection = _connectionFactory.CreateConnection();
         
-        var sql = "UPDATE Users SET LastLoginDate = GETDATE() WHERE UserID = @UserId";
+        const string sql = "UPDATE Users SET LastLoginDate = GETDATE() WHERE UserID = @UserId";
         var rowsAffected = await connection.ExecuteAsync(sql, new { UserId = userId });
         
         return rowsAffected > 0;
@@ -75,10 +75,10 @@ public class AuthRepository : IAuthRepository
     {
         using var connection = _connectionFactory.CreateConnection();
         
-        var sql = @"SELECT r.* 
-                    FROM Roles r
-                    INNER JOIN UserRoles ur ON r.RoleID = ur.RoleID
-                    WHERE ur.UserID = @UserId AND r.IsActive = 1";
+        const string sql = @"SELECT r.* 
+                            FROM Roles r
+                            INNER JOIN UserRoles ur ON r.RoleID = ur.RoleID
+                            WHERE ur.UserID = @UserId AND r.IsActive = 1";
 
         return await connection.QueryAsync<Role>(sql, new { UserId = userId });
     }
