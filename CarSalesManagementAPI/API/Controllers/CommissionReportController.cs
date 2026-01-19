@@ -43,7 +43,7 @@ public class CommissionReportController : ControllerBase
             });
         }
 
-        var response = await _commissionService.GenerateCommissionReportAsync(salesmanId, month, year);
+        var response = await _commissionService.GenerateCommissionReport(salesmanId, month, year);
         
         if (!response.Success)
         {
@@ -82,7 +82,7 @@ public class CommissionReportController : ControllerBase
             });
         }
 
-        var response = await _commissionService.GenerateAllSalesmenCommissionReportAsync(month, year);
+        var response = await _commissionService.GenerateAllSalesmenCommissionReport(month, year);
         
         if (!response.Success)
         {

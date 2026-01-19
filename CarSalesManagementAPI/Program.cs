@@ -74,6 +74,10 @@ builder.Services.AddScoped<ICarModelService, CarModelService>();
 builder.Services.AddScoped<ICommissionService, CommissionService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICacheService, CacheService>();
+
+// HttpContextAccessor (for future authentication)
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

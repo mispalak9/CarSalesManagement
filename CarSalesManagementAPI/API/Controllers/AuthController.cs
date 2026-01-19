@@ -20,7 +20,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login([FromBody] LoginDto loginDto)
     {
-        var response = await _authService.LoginAsync(loginDto);
+        var response = await _authService.Login(loginDto);
 
         if (!response.Success)
         {
@@ -33,7 +33,7 @@ public class AuthController : ControllerBase
     [HttpGet("user/{userId}")]
     public async Task<ActionResult<ApiResponse<LoginResponseDto>>> GetUserInfo(int userId)
     {
-        var response = await _authService.GetUserInfoAsync(userId);
+        var response = await _authService.GetUserInfo(userId);
 
         if (!response.Success)
         {

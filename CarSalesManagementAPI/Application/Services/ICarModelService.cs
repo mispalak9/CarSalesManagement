@@ -4,17 +4,17 @@ namespace CarSalesManagementAPI.Application.Services;
 
 public interface ICarModelService
 {
-    Task<ApiResponse<IEnumerable<CarModelDto>>> GetAllAsync(string? searchTerm = null, string? orderBy = null);
-    Task<ApiResponse<CarModelDto>> GetByIdAsync(int id);
-    Task<ApiResponse<CarModelDto>> CreateAsync(CreateCarModelDto dto);
-    Task<ApiResponse<bool>> UpdateAsync(UpdateCarModelDto dto);
-    Task<ApiResponse<bool>> DeleteAsync(int id);
-    Task<ApiResponse<IEnumerable<CarModelImageDto>>> GetImagesByModelIdAsync(int modelId);
-    Task<ApiResponse<string>> UploadImageAsync(int modelId, IFormFile file);
-    Task<ApiResponse<bool>> SetDefaultImageAsync(int imageId, int modelId);
-    Task<ApiResponse<bool>> DeleteImageAsync(int imageId);
-    Task<ApiResponse<IEnumerable<BrandDto>>> GetAllBrandsAsync();
-    Task<ApiResponse<IEnumerable<CarClassDto>>> GetAllClassesAsync();
+    Task<ApiResponse<IEnumerable<CarModelDto>>> GetAll(string? searchTerm = null, string? orderBy = null);
+    Task<ApiResponse<CarModelDto>> GetById(int id);
+    Task<ApiResponse<CarModelDto>> Create(CreateCarModelDto dto);
+    Task<ApiResponse<bool>> Update(UpdateCarModelDto dto);
+    Task<ApiResponse<bool>> Delete(int id);
+    Task<ApiResponse<IEnumerable<CarModelImageDto>>> GetImagesByModelId(int modelId);
+    Task<ApiResponse<string>> UploadImage(int modelId, IFormFile file);
+    Task<ApiResponse<bool>> SetDefaultImage(int imageId, int modelId);
+    Task<ApiResponse<bool>> DeleteImage(int imageId);
+    Task<ApiResponse<IEnumerable<BrandDto>>> GetAllBrands();
+    Task<ApiResponse<IEnumerable<CarClassDto>>> GetAllClasses();
 }
 
 public class BrandDto

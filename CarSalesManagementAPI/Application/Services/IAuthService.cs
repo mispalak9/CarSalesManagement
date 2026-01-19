@@ -4,6 +4,6 @@ namespace CarSalesManagementAPI.Application.Services;
 
 public interface IAuthService
 {
-    Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginDto loginDto);
-    Task<ApiResponse<LoginResponseDto>> GetUserInfoAsync(int userId);
+    Task<ApiResponse<LoginResponseDto>> Login(LoginDto loginDto);
+    Task<ApiResponse<LoginResponseDto>> GetUserInfo(int userId);
 }

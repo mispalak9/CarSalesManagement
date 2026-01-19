@@ -4,8 +4,8 @@ namespace CarSalesManagementAPI.Domain.Interfaces;
 
 public interface IAuthRepository
 {
-    Task<User?> GetUserByUsernameAsync(string username);
-    Task<User?> GetUserByIdAsync(int userId);
-    Task<bool> UpdateLastLoginDateAsync(int userId);
-    Task<IEnumerable<Role>> GetUserRolesAsync(int userId);
+    Task<User?> GetUserByUsername(string username);
+    Task<User?> GetUserById(int userId);
+    Task<bool> UpdateLastLoginDate(int userId);
+    Task<IEnumerable<Role>> GetUserRoles(int userId);
 }

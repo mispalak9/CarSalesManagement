@@ -18,11 +18,11 @@ public class MenuService : IMenuService
         _mapper = mapper;
     }
 
-    public async Task<ApiResponse<UserMenuResponseDto>> GetUserMenusAsync(int userId)
+    public async Task<ApiResponse<UserMenuResponseDto>> GetUserMenus(int userId)
     {
         try
         {
-            var user = await _authRepository.GetUserByIdAsync(userId);
+            var user = await _authRepository.GetUserById(userId);
             if (user == null)
             {
                 return new ApiResponse<UserMenuResponseDto>
@@ -34,8 +34,7 @@ public class MenuService : IMenuService
             }
 
             // Get user roles
-            var userRoles = await _authRepository.GetUserRolesAsync(userId);
-            var roleIds = userRoles.Select(r => r.RoleID).ToList();
+            var roleIds = await _menuRepository.GetUserRoleIds(userId);
 
             if (!roleIds.Any())
             {
@@ -60,10 +59,10 @@ public class MenuService : IMenuService
 
             foreach (var roleId in roleIds)
             {
-                var menuItems = await _menuRepository.GetMenuItemsByRoleIdAsync(roleId);
+                var menuItems = await _menuRepository.GetMenuItemsByRoleId(roleId);
                 allMenuItems.AddRange(menuItems);
 
-                var permissions = await _menuRepository.GetRoleMenuPermissionsAsync(roleId);
+                var permissions = await _menuRepository.GetRoleMenuPermissions(roleId);
                 foreach (var perm in permissions)
                 {
                     if (!allPermissions.ContainsKey(perm.MenuID))
@@ -96,7 +95,7 @@ public class MenuService : IMenuService
                 UserID = user.UserID,
                 Username = user.Username,
                 FullName = user.FullName,
-                Roles = userRoles.Select(r => r.RoleName).ToList(),
+                Roles = new List<string>(), // TODO: Get user roles from auth repository
                 Menus = menuDtos
             };
 
@@ -118,12 +117,12 @@ public class MenuService : IMenuService
         }
     }
 
-    public async Task<ApiResponse<IEnumerable<MenuDto>>> GetMenusByRoleIdAsync(int roleId)
+    public async Task<ApiResponse<IEnumerable<MenuDto>>> GetMenusByRoleId(int roleId)
     {
         try
         {
-            var menuItems = await _menuRepository.GetMenuItemsByRoleIdAsync(roleId);
-            var permissions = await _menuRepository.GetRoleMenuPermissionsAsync(roleId);
+            var menuItems = await _menuRepository.GetMenuItemsByRoleId(roleId);
+            var permissions = await _menuRepository.GetRoleMenuPermissions(roleId);
             var permissionsDict = permissions.ToDictionary(p => p.MenuID);
 
             var menuDtos = MapMenusWithPermissions(menuItems, permissionsDict);

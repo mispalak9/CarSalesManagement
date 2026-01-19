@@ -15,7 +15,7 @@ public class MenuRepository : IMenuRepository
         _connectionFactory = connectionFactory;
     }
 
-    public async Task<IEnumerable<MenuItem>> GetMenuItemsByRoleIdAsync(int roleId)
+    public async Task<IEnumerable<MenuItem>> GetMenuItemsByRoleId(int roleId)
     {
         using var connection = _connectionFactory.CreateConnection();
 
@@ -45,7 +45,7 @@ public class MenuRepository : IMenuRepository
         return parentMenus;
     }
 
-    public async Task<IEnumerable<MenuItem>> GetAllMenuItemsAsync()
+    public async Task<IEnumerable<MenuItem>> GetAllMenuItems()
     {
         using var connection = _connectionFactory.CreateConnection();
 
@@ -70,7 +70,7 @@ public class MenuRepository : IMenuRepository
         return parentMenus;
     }
 
-    public async Task<IEnumerable<RoleMenuPermission>> GetRoleMenuPermissionsAsync(int roleId)
+    public async Task<IEnumerable<RoleMenuPermission>> GetRoleMenuPermissions(int roleId)
     {
         using var connection = _connectionFactory.CreateConnection();
 
@@ -81,7 +81,7 @@ public class MenuRepository : IMenuRepository
         return await connection.QueryAsync<RoleMenuPermission>(sql, new { RoleId = roleId });
     }
 
-    public async Task<IEnumerable<int>> GetUserRoleIdsAsync(int userId)
+    public async Task<IEnumerable<int>> GetUserRoleIds(int userId)
     {
         using var connection = _connectionFactory.CreateConnection();
 

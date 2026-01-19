@@ -25,20 +25,24 @@ public class CarModelService : ICarModelService
         _configuration = configuration;
     }
 
-    public async Task<ApiResponse<IEnumerable<CarModelDto>>> GetAllAsync(string? searchTerm = null, string? orderBy = null)
+    public async Task<ApiResponse<IEnumerable<CarModelDto>>> GetAll(string? searchTerm = null, string? orderBy = null)
     {
         try
         {
-            var models = await _repository.GetAllAsync(searchTerm, orderBy);
-            var modelDtos = new List<CarModelDto>();
+            var models = await _repository.GetAll(searchTerm, orderBy);
+            var modelIds = models.Select(m => m.ModelID);
+            var allImages = await _repository.GetImagesByModelIds(modelIds);
+            var imagesDict = allImages.GroupBy(img => img.ModelID)
+                                   .ToDictionary(g => g.Key, g => g.ToList());
 
-            foreach (var model in models)
+            var modelDtos = models.Select(model =>
             {
                 var dto = _mapper.Map<CarModelDto>(model);
-                var images = await _repository.GetImagesByModelIdAsync(model.ModelID);
-                dto.Images = _mapper.Map<List<CarModelImageDto>>(images);
-                modelDtos.Add(dto);
-            }
+                dto.Images = _mapper.Map<List<CarModelImageDto>>(
+                    imagesDict.GetValueOrDefault(model.ModelID, new List<CarModelImage>())
+                );
+                return dto;
+            });
 
             return new ApiResponse<IEnumerable<CarModelDto>>
             {
@@ -58,11 +62,11 @@ public class CarModelService : ICarModelService
         }
     }
 
-    public async Task<ApiResponse<CarModelDto>> GetByIdAsync(int id)
+    public async Task<ApiResponse<CarModelDto>> GetById(int id)
     {
         try
         {
-            var model = await _repository.GetByIdAsync(id);
+            var model = await _repository.GetById(id);
             if (model == null)
             {
                 return new ApiResponse<CarModelDto>
@@ -74,7 +78,7 @@ public class CarModelService : ICarModelService
             }
 
             var dto = _mapper.Map<CarModelDto>(model);
-            var images = await _repository.GetImagesByModelIdAsync(id);
+            var images = await _repository.GetImagesByModelId(id);
             dto.Images = _mapper.Map<List<CarModelImageDto>>(images);
 
             return new ApiResponse<CarModelDto>
@@ -95,12 +99,11 @@ public class CarModelService : ICarModelService
         }
     }
 
-    public async Task<ApiResponse<CarModelDto>> CreateAsync(CreateCarModelDto dto)
+    public async Task<ApiResponse<CarModelDto>> Create(CreateCarModelDto dto)
     {
         try
         {
-            // Check if model code already exists
-            var existing = await _repository.GetByModelCodeAsync(dto.ModelCode.ToUpper());
+            var existing = await _repository.GetByModelCode(dto.ModelCode.ToUpper());
             if (existing != null)
             {
                 return new ApiResponse<CarModelDto>
@@ -111,8 +114,7 @@ public class CarModelService : ICarModelService
                 };
             }
 
-            // Validate brand and class
-            var brand = await _repository.GetBrandByIdAsync(dto.BrandID);
+            var brand = await _repository.GetBrandById(dto.BrandID);
             if (brand == null)
             {
                 return new ApiResponse<CarModelDto>
@@ -123,7 +125,7 @@ public class CarModelService : ICarModelService
                 };
             }
 
-            var carClass = await _repository.GetClassByIdAsync(dto.ClassID);
+            var carClass = await _repository.GetClassById(dto.ClassID);
             if (carClass == null)
             {
                 return new ApiResponse<CarModelDto>
@@ -136,12 +138,12 @@ public class CarModelService : ICarModelService
 
             var model = _mapper.Map<CarModel>(dto);
             model.ModelCode = dto.ModelCode.ToUpper();
-            model.CreatedBy = 1; // TODO: Get from authenticated user context
+            model.CreatedBy = null;
             model.CreatedOn = DateTime.Now;
 
-            var modelId = await _repository.CreateAsync(model);
+            var modelId = await _repository.Create(model);
 
-            var createdModel = await _repository.GetByIdAsync(modelId);
+            var createdModel = await _repository.GetById(modelId);
             var resultDto = _mapper.Map<CarModelDto>(createdModel);
 
             return new ApiResponse<CarModelDto>
@@ -162,11 +164,11 @@ public class CarModelService : ICarModelService
         }
     }
 
-    public async Task<ApiResponse<bool>> UpdateAsync(UpdateCarModelDto dto)
+    public async Task<ApiResponse<bool>> Update(UpdateCarModelDto dto)
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(dto.ModelID);
+            var existing = await _repository.GetById(dto.ModelID);
             if (existing == null)
             {
                 return new ApiResponse<bool>
@@ -177,10 +179,9 @@ public class CarModelService : ICarModelService
                 };
             }
 
-            // Check if model code is being changed and if new code already exists
             if (existing.ModelCode != dto.ModelCode.ToUpper())
             {
-                var codeExists = await _repository.GetByModelCodeAsync(dto.ModelCode.ToUpper());
+                var codeExists = await _repository.GetByModelCode(dto.ModelCode.ToUpper());
                 if (codeExists != null && codeExists.ModelID != dto.ModelID)
                 {
                     return new ApiResponse<bool>
@@ -194,10 +195,10 @@ public class CarModelService : ICarModelService
 
             var model = _mapper.Map<CarModel>(dto);
             model.ModelCode = dto.ModelCode.ToUpper();
-            model.LastUpdatedBy = 1; // TODO: Get from authenticated user context
+            model.LastUpdatedBy = null; // Will be updated with proper authentication later
             model.LastUpdatedOn = DateTime.Now;
 
-            var updated = await _repository.UpdateAsync(model);
+            var updated = await _repository.Update(model);
 
             return new ApiResponse<bool>
             {
@@ -217,11 +218,11 @@ public class CarModelService : ICarModelService
         }
     }
 
-    public async Task<ApiResponse<bool>> DeleteAsync(int id)
+    public async Task<ApiResponse<bool>> Delete(int id)
     {
         try
         {
-            var deleted = await _repository.DeleteAsync(id);
+            var deleted = await _repository.Delete(id);
             return new ApiResponse<bool>
             {
                 Success = deleted,
@@ -240,11 +241,11 @@ public class CarModelService : ICarModelService
         }
     }
 
-    public async Task<ApiResponse<IEnumerable<CarModelImageDto>>> GetImagesByModelIdAsync(int modelId)
+    public async Task<ApiResponse<IEnumerable<CarModelImageDto>>> GetImagesByModelId(int modelId)
     {
         try
         {
-            var images = await _repository.GetImagesByModelIdAsync(modelId);
+            var images = await _repository.GetImagesByModelId(modelId);
             var imageDtos = _mapper.Map<IEnumerable<CarModelImageDto>>(images);
 
             return new ApiResponse<IEnumerable<CarModelImageDto>>
@@ -265,11 +266,11 @@ public class CarModelService : ICarModelService
         }
     }
 
-    public async Task<ApiResponse<string>> UploadImageAsync(int modelId, IFormFile file)
+    public async Task<ApiResponse<string>> UploadImage(int modelId, IFormFile file)
     {
         try
         {
-            var model = await _repository.GetByIdAsync(modelId);
+            var model = await _repository.GetById(modelId);
             if (model == null)
             {
                 return new ApiResponse<string>
@@ -306,7 +307,6 @@ public class CarModelService : ICarModelService
                 };
             }
 
-            // Create upload directory
             var uploadPath = _configuration["FileUpload:UploadPath"] ?? "wwwroot/uploads/carmodels";
             var fullUploadPath = Path.Combine(_environment.WebRootPath ?? _environment.ContentRootPath, uploadPath);
             if (!Directory.Exists(fullUploadPath))
@@ -314,18 +314,15 @@ public class CarModelService : ICarModelService
                 Directory.CreateDirectory(fullUploadPath);
             }
 
-            // Generate unique file name
             var fileName = $"{Guid.NewGuid()}{extension}";
             var filePath = Path.Combine(fullUploadPath, fileName);
             var relativePath = Path.Combine(uploadPath, fileName).Replace('\\', '/');
 
-            // Save file
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
 
-            // Save image record
             var image = new CarModelImage
             {
                 ModelID = modelId,
@@ -334,11 +331,11 @@ public class CarModelService : ICarModelService
                 ImageSize = file.Length,
                 IsDefault = false,
                 SortOrder = 0,
-                CreatedBy = 1, // TODO: Get from authenticated user context
+                CreatedBy = null,
                 CreatedOn = DateTime.Now
             };
 
-            var imageId = await _repository.AddImageAsync(image);
+            var imageId = await _repository.AddImage(image);
 
             return new ApiResponse<string>
             {
@@ -358,11 +355,11 @@ public class CarModelService : ICarModelService
         }
     }
 
-    public async Task<ApiResponse<bool>> SetDefaultImageAsync(int imageId, int modelId)
+    public async Task<ApiResponse<bool>> SetDefaultImage(int imageId, int modelId)
     {
         try
         {
-            var result = await _repository.SetDefaultImageAsync(imageId, modelId);
+            var result = await _repository.SetDefaultImage(imageId, modelId);
             return new ApiResponse<bool>
             {
                 Success = result,
@@ -381,11 +378,11 @@ public class CarModelService : ICarModelService
         }
     }
 
-    public async Task<ApiResponse<bool>> DeleteImageAsync(int imageId)
+    public async Task<ApiResponse<bool>> DeleteImage(int imageId)
     {
         try
         {
-            var result = await _repository.DeleteImageAsync(imageId);
+            var result = await _repository.DeleteImage(imageId);
             return new ApiResponse<bool>
             {
                 Success = result,
@@ -404,11 +401,11 @@ public class CarModelService : ICarModelService
         }
     }
 
-    public async Task<ApiResponse<IEnumerable<BrandDto>>> GetAllBrandsAsync()
+    public async Task<ApiResponse<IEnumerable<BrandDto>>> GetAllBrands()
     {
         try
         {
-            var brands = await _repository.GetAllBrandsAsync();
+            var brands = await _repository.GetAllBrands();
             var brandDtos = _mapper.Map<IEnumerable<BrandDto>>(brands);
 
             return new ApiResponse<IEnumerable<BrandDto>>
@@ -429,11 +426,11 @@ public class CarModelService : ICarModelService
         }
     }
 
-    public async Task<ApiResponse<IEnumerable<CarClassDto>>> GetAllClassesAsync()
+    public async Task<ApiResponse<IEnumerable<CarClassDto>>> GetAllClasses()
     {
         try
         {
-            var classes = await _repository.GetAllClassesAsync();
+            var classes = await _repository.GetAllClasses();
             var classDtos = _mapper.Map<IEnumerable<CarClassDto>>(classes);
 
             return new ApiResponse<IEnumerable<CarClassDto>>

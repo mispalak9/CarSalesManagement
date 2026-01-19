@@ -23,7 +23,7 @@ public class CarModelsController : ControllerBase
         [FromQuery] string? searchTerm = null,
         [FromQuery] string? orderBy = null)
     {
-        var response = await _carModelService.GetAllAsync(searchTerm, orderBy);
+        var response = await _carModelService.GetAll(searchTerm, orderBy);
         
         if (!response.Success)
         {
@@ -36,7 +36,7 @@ public class CarModelsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ApiResponse<CarModelDto>>> GetById(int id)
     {
-        var response = await _carModelService.GetByIdAsync(id);
+        var response = await _carModelService.GetById(id);
         
         if (!response.Success)
         {
@@ -53,7 +53,7 @@ public class CarModelsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ApiResponse<CarModelDto>>> Create([FromBody] CreateCarModelDto dto)
     {
-        var response = await _carModelService.CreateAsync(dto);
+        var response = await _carModelService.Create(dto);
         
         if (!response.Success)
         {
@@ -76,7 +76,7 @@ public class CarModelsController : ControllerBase
             });
         }
 
-        var response = await _carModelService.UpdateAsync(dto);
+        var response = await _carModelService.Update(dto);
         
         if (!response.Success)
         {
@@ -93,9 +93,9 @@ public class CarModelsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResponse<bool>>> Delete(int id)
     {
-        var response = await _carModelService.DeleteAsync(id);
+        var response = await _carModelService.Delete(id);
         
-        if (!response.Success || !response.Data)
+        if (!response.Success)
         {
             if (response.Errors.Any(e => e.Contains("not found")))
             {
@@ -110,7 +110,7 @@ public class CarModelsController : ControllerBase
     [HttpGet("{modelId}/images")]
     public async Task<ActionResult<ApiResponse<IEnumerable<CarModelImageDto>>>> GetImages(int modelId)
     {
-        var response = await _carModelService.GetImagesByModelIdAsync(modelId);
+        var response = await _carModelService.GetImagesByModelId(modelId);
         
         if (!response.Success)
         {
@@ -133,7 +133,7 @@ public class CarModelsController : ControllerBase
             });
         }
 
-        var response = await _carModelService.UploadImageAsync(modelId, file);
+        var response = await _carModelService.UploadImage(modelId, file);
         
         if (!response.Success)
         {
@@ -146,7 +146,7 @@ public class CarModelsController : ControllerBase
     [HttpPut("{modelId}/images/{imageId}/set-default")]
     public async Task<ActionResult<ApiResponse<bool>>> SetDefaultImage(int modelId, int imageId)
     {
-        var response = await _carModelService.SetDefaultImageAsync(imageId, modelId);
+        var response = await _carModelService.SetDefaultImage(imageId, modelId);
         
         if (!response.Success)
         {
@@ -159,7 +159,7 @@ public class CarModelsController : ControllerBase
     [HttpDelete("{modelId}/images/{imageId}")]
     public async Task<ActionResult<ApiResponse<bool>>> DeleteImage(int modelId, int imageId)
     {
-        var response = await _carModelService.DeleteImageAsync(imageId);
+        var response = await _carModelService.DeleteImage(imageId);
         
         if (!response.Success)
         {
@@ -172,7 +172,7 @@ public class CarModelsController : ControllerBase
     [HttpGet("brands")]
     public async Task<ActionResult<ApiResponse<IEnumerable<BrandDto>>>> GetAllBrands()
     {
-        var response = await _carModelService.GetAllBrandsAsync();
+        var response = await _carModelService.GetAllBrands();
         
         if (!response.Success)
         {
@@ -185,7 +185,7 @@ public class CarModelsController : ControllerBase
     [HttpGet("classes")]
     public async Task<ActionResult<ApiResponse<IEnumerable<CarClassDto>>>> GetAllClasses()
     {
-        var response = await _carModelService.GetAllClassesAsync();
+        var response = await _carModelService.GetAllClasses();
         
         if (!response.Success)
         {

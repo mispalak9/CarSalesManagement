@@ -15,7 +15,7 @@ public class AuthRepository : IAuthRepository
         _connectionFactory = connectionFactory;
     }
 
-    public async Task<User?> GetUserByUsernameAsync(string username)
+    public async Task<User?> GetUserByUsername(string username)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -38,7 +38,7 @@ public class AuthRepository : IAuthRepository
         return result.FirstOrDefault();
     }
 
-    public async Task<User?> GetUserByIdAsync(int userId)
+    public async Task<User?> GetUserById(int userId)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -61,7 +61,7 @@ public class AuthRepository : IAuthRepository
         return result.FirstOrDefault();
     }
 
-    public async Task<bool> UpdateLastLoginDateAsync(int userId)
+    public async Task<bool> UpdateLastLoginDate(int userId)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -71,7 +71,7 @@ public class AuthRepository : IAuthRepository
         return rowsAffected > 0;
     }
 
-    public async Task<IEnumerable<Role>> GetUserRolesAsync(int userId)
+    public async Task<IEnumerable<Role>> GetUserRoles(int userId)
     {
         using var connection = _connectionFactory.CreateConnection();
         

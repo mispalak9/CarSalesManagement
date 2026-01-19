@@ -4,18 +4,19 @@ namespace CarSalesManagementAPI.Domain.Interfaces;
 
 public interface ICarModelRepository
 {
-    Task<IEnumerable<CarModel>> GetAllAsync(string? searchTerm = null, string? orderBy = null);
-    Task<CarModel?> GetByIdAsync(int id);
-    Task<CarModel?> GetByModelCodeAsync(string modelCode);
-    Task<int> CreateAsync(CarModel model);
-    Task<bool> UpdateAsync(CarModel model);
-    Task<bool> DeleteAsync(int id);
-    Task<IEnumerable<CarModelImage>> GetImagesByModelIdAsync(int modelId);
-    Task<int> AddImageAsync(CarModelImage image);
-    Task<bool> DeleteImageAsync(int imageId);
-    Task<bool> SetDefaultImageAsync(int imageId, int modelId);
-    Task<Brand?> GetBrandByIdAsync(int brandId);
-    Task<CarClass?> GetClassByIdAsync(int classId);
-    Task<IEnumerable<Brand>> GetAllBrandsAsync();
-    Task<IEnumerable<CarClass>> GetAllClassesAsync();
+    Task<IEnumerable<CarModel>> GetAll(string? searchTerm = null, string? orderBy = null);
+    Task<CarModel?> GetById(int id);
+    Task<CarModel?> GetByModelCode(string modelCode);
+    Task<int> Create(CarModel model);
+    Task<bool> Update(CarModel model);
+    Task<bool> Delete(int id);
+    Task<IEnumerable<CarModelImage>> GetImagesByModelId(int modelId);
+    Task<IEnumerable<CarModelImage>> GetImagesByModelIds(IEnumerable<int> modelIds);
+    Task<int> AddImage(CarModelImage image);
+    Task<bool> SetDefaultImage(int imageId, int modelId);
+    Task<bool> DeleteImage(int imageId);
+    Task<IEnumerable<Brand>> GetAllBrands();
+    Task<Brand?> GetBrandById(int brandId);
+    Task<IEnumerable<CarClass>> GetAllClasses();
+    Task<CarClass?> GetClassById(int classId);
 }

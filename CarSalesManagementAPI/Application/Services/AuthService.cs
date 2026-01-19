@@ -17,7 +17,7 @@ public class AuthService : IAuthService
         _logger = logger;
     }
 
-    public async Task<ApiResponse<LoginResponseDto>> LoginAsync(LoginDto loginDto)
+    public async Task<ApiResponse<LoginResponseDto>> Login(LoginDto loginDto)
     {
         try
         {
@@ -31,7 +31,7 @@ public class AuthService : IAuthService
                 };
             }
 
-            var user = await _authRepository.GetUserByUsernameAsync(loginDto.Username);
+            var user = await _authRepository.GetUserByUsername(loginDto.Username);
             if (user == null)
             {
                 return new ApiResponse<LoginResponseDto>
@@ -42,10 +42,8 @@ public class AuthService : IAuthService
                 };
             }
 
-            // Verify password (simple hash comparison for now - in production use BCrypt or similar)
-            // TODO: Implement proper password hashing (BCrypt/Argon2)
             var passwordHash = ComputeHash(loginDto.Password);
-            if (user.PasswordHash != passwordHash && user.PasswordHash != "TEMP_HASH") // Allow temp hash for initial setup
+            if (user.PasswordHash != passwordHash)
             {
                 return new ApiResponse<LoginResponseDto>
                 {
@@ -56,10 +54,10 @@ public class AuthService : IAuthService
             }
 
             // Update last login date
-            await _authRepository.UpdateLastLoginDateAsync(user.UserID);
+            await _authRepository.UpdateLastLoginDate(user.UserID);
 
             // Get user roles
-            var roles = await _authRepository.GetUserRolesAsync(user.UserID);
+            var roles = await _authRepository.GetUserRoles(user.UserID);
 
             var response = new LoginResponseDto
             {
@@ -68,7 +66,7 @@ public class AuthService : IAuthService
                 FullName = user.FullName,
                 Email = user.Email,
                 Roles = roles.Select(r => r.RoleName).ToList(),
-                Token = null // TODO: Generate JWT token for authentication
+                Token = null
             };
 
             return new ApiResponse<LoginResponseDto>
@@ -90,11 +88,11 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<ApiResponse<LoginResponseDto>> GetUserInfoAsync(int userId)
+    public async Task<ApiResponse<LoginResponseDto>> GetUserInfo(int userId)
     {
         try
         {
-            var user = await _authRepository.GetUserByIdAsync(userId);
+            var user = await _authRepository.GetUserById(userId);
             if (user == null)
             {
                 return new ApiResponse<LoginResponseDto>
@@ -105,7 +103,7 @@ public class AuthService : IAuthService
                 };
             }
 
-            var roles = await _authRepository.GetUserRolesAsync(userId);
+            var roles = await _authRepository.GetUserRoles(userId);
 
             var response = new LoginResponseDto
             {

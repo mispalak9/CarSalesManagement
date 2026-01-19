@@ -15,7 +15,7 @@ public class CarModelRepository : ICarModelRepository
         _connectionFactory = connectionFactory;
     }
 
-    public async Task<IEnumerable<CarModel>> GetAllAsync(string? searchTerm = null, string? orderBy = null)
+    public async Task<IEnumerable<CarModel>> GetAll(string? searchTerm = null, string? orderBy = null)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -46,11 +46,11 @@ public class CarModelRepository : ICarModelRepository
                 return model;
             },
             new { SearchTerm = $"%{searchTerm}%" },
-            splitOn: "BrandID,ClassID"
+            splitOn: "BrandName,ClassName"
         );
     }
 
-    public async Task<CarModel?> GetByIdAsync(int id)
+    public async Task<CarModel?> GetById(int id)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -69,13 +69,13 @@ public class CarModelRepository : ICarModelRepository
                 return model;
             },
             new { Id = id },
-            splitOn: "BrandID,ClassID"
+            splitOn: "BrandName,ClassName"
         );
 
         return result.FirstOrDefault();
     }
 
-    public async Task<CarModel?> GetByModelCodeAsync(string modelCode)
+    public async Task<CarModel?> GetByModelCode(string modelCode)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -83,7 +83,7 @@ public class CarModelRepository : ICarModelRepository
         return await connection.QueryFirstOrDefaultAsync<CarModel>(sql, new { ModelCode = modelCode });
     }
 
-    public async Task<int> CreateAsync(CarModel model)
+    public async Task<int> Create(CarModel model)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -96,7 +96,7 @@ public class CarModelRepository : ICarModelRepository
         return await connection.QuerySingleAsync<int>(sql, model);
     }
 
-    public async Task<bool> UpdateAsync(CarModel model)
+    public async Task<bool> Update(CarModel model)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -112,7 +112,7 @@ public class CarModelRepository : ICarModelRepository
         return rowsAffected > 0;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> Delete(int id)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -121,7 +121,7 @@ public class CarModelRepository : ICarModelRepository
         return rowsAffected > 0;
     }
 
-    public async Task<IEnumerable<CarModelImage>> GetImagesByModelIdAsync(int modelId)
+    public async Task<IEnumerable<CarModelImage>> GetImagesByModelId(int modelId)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -132,7 +132,7 @@ public class CarModelRepository : ICarModelRepository
         return await connection.QueryAsync<CarModelImage>(sql, new { ModelId = modelId });
     }
 
-    public async Task<int> AddImageAsync(CarModelImage image)
+    public async Task<int> AddImage(CarModelImage image)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -145,7 +145,7 @@ public class CarModelRepository : ICarModelRepository
         return await connection.QuerySingleAsync<int>(sql, image);
     }
 
-    public async Task<bool> DeleteImageAsync(int imageId)
+    public async Task<bool> DeleteImage(int imageId)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -154,7 +154,7 @@ public class CarModelRepository : ICarModelRepository
         return rowsAffected > 0;
     }
 
-    public async Task<bool> SetDefaultImageAsync(int imageId, int modelId)
+    public async Task<bool> SetDefaultImage(int imageId, int modelId)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -185,28 +185,35 @@ public class CarModelRepository : ICarModelRepository
         }
     }
 
-    public async Task<Brand?> GetBrandByIdAsync(int brandId)
+    public async Task<IEnumerable<CarModelImage>> GetImagesByModelIds(IEnumerable<int> modelIds)
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        var sql = "SELECT * FROM CarModelImages WHERE ModelID IN @ModelIds ORDER BY ModelID, SortOrder";
+        return await connection.QueryAsync<CarModelImage>(sql, new { ModelIds = modelIds });
+    }
+
+    public async Task<Brand?> GetBrandById(int brandId)
     {
         using var connection = _connectionFactory.CreateConnection();
         var sql = "SELECT * FROM Brands WHERE BrandID = @BrandId";
         return await connection.QueryFirstOrDefaultAsync<Brand>(sql, new { BrandId = brandId });
     }
 
-    public async Task<CarClass?> GetClassByIdAsync(int classId)
+    public async Task<CarClass?> GetClassById(int classId)
     {
         using var connection = _connectionFactory.CreateConnection();
         var sql = "SELECT * FROM CarClasses WHERE ClassID = @ClassId";
         return await connection.QueryFirstOrDefaultAsync<CarClass>(sql, new { ClassId = classId });
     }
 
-    public async Task<IEnumerable<Brand>> GetAllBrandsAsync()
+    public async Task<IEnumerable<Brand>> GetAllBrands()
     {
         using var connection = _connectionFactory.CreateConnection();
         var sql = "SELECT * FROM Brands WHERE IsActive = 1 ORDER BY BrandName";
         return await connection.QueryAsync<Brand>(sql);
     }
 
-    public async Task<IEnumerable<CarClass>> GetAllClassesAsync()
+    public async Task<IEnumerable<CarClass>> GetAllClasses()
     {
         using var connection = _connectionFactory.CreateConnection();
         var sql = "SELECT * FROM CarClasses WHERE IsActive = 1 ORDER BY DisplayOrder";

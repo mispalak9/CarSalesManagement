@@ -10,34 +10,31 @@ public class CommissionService : ICommissionService
 {
     private readonly ICommissionRepository _repository;
     private readonly IMapper _mapper;
+    private readonly ICacheService _cacheService;
 
-    public CommissionService(ICommissionRepository repository, IMapper mapper)
+    public CommissionService(ICommissionRepository repository, IMapper mapper, ICacheService cacheService)
     {
         _repository = repository;
         _mapper = mapper;
+        _cacheService = cacheService;
     }
 
-    public async Task<ApiResponse<CommissionReportDto>> GenerateCommissionReportAsync(int salesmanId, int month, int year)
+    public async Task<ApiResponse<CommissionReportDto>> GenerateCommissionReport(int salesmanId, int month, int year)
     {
         try
         {
-            var salesman = await _repository.GetSalesmanByIdAsync(salesmanId);
+            var salesman = await _repository.GetSalesmanById(salesmanId);
             if (salesman == null)
             {
                 return new ApiResponse<CommissionReportDto>
                 {
                     Success = false,
                     Message = "Salesman not found.",
-                    Errors = new List<string> { $"Salesman with ID {salesmanId} not found." }
+                    Errors = new List<string> { "Salesman ID not found." }
                 };
             }
 
-            var previousYear = year - 1;
-            var yearlySales = await _repository.GetSalesmanYearlySalesAsync(salesmanId, previousYear);
-            var previousYearSales = yearlySales?.TotalSaleAmount ?? 0;
-            var bonusEligible = previousYearSales > ApplicationConstants.Commission.BonusEligibilityThreshold;
-
-            var sales = await _repository.GetSalesBySalesmanMonthYearAsync(salesmanId, month, year);
+            var sales = await _repository.GetSalesBySalesmanMonthYear(salesmanId, month, year);
             if (!sales.Any())
             {
                 return new ApiResponse<CommissionReportDto>
@@ -46,36 +43,46 @@ public class CommissionService : ICommissionService
                     Message = "No sales found for the specified period.",
                     Data = new CommissionReportDto
                     {
-                        SalesmanID = salesman.SalesmanID,
+                        SalesmanID = salesmanId,
                         SalesmanName = salesman.SalesmanName,
                         SalesmanCode = salesman.SalesmanCode,
                         SaleMonth = month,
                         SaleYear = year,
-                        PreviousYearSales = previousYearSales,
-                        BonusEligible = bonusEligible
+                        PreviousYearSales = 0,
+                        BonusEligible = false,
+                        BrandDetails = new List<BrandCommissionDetailDto>(),
+                        TotalFixedCommission = 0,
+                        TotalPercentageCommission = 0,
+                        TotalBonusCommission = 0,
+                        GrandTotalCommission = 0
                     }
                 };
             }
 
-            // Batch load all required data - only load models that are in the sales
+            var previousYearSales = await _repository.GetSalesmanYearlySales(salesmanId, year - 1);
+            var bonusEligible = previousYearSales?.TotalSaleAmount >= ApplicationConstants.Commission.BonusEligibilityThreshold;
+
             var modelIds = sales.Select(s => s.ModelID).Distinct().ToList();
-            var carModels = await _repository.GetCarModelsByIdsAsync(modelIds);
+            var carModels = await _repository.GetCarModelsByIds(modelIds);
             var modelsDict = carModels.ToDictionary(m => m.ModelID);
-            var allCommissionRules = await _repository.GetAllCommissionRulesAsync();
-            var rulesDict = allCommissionRules.ToDictionary(r => (r.BrandID, r.ClassID));
+
+            var allCommissionRules = await _cacheService.GetCommissionRules();
+            var rulesDict = allCommissionRules.ToDictionary(r => $"{r.BrandID}_{r.ClassID}");
+
+            var carClasses = await _cacheService.GetCarClasses();
+            var classAId = carClasses.FirstOrDefault(c => c.ClassCode == "A")?.ClassID ?? 0;
 
             var report = new CommissionReportDto
             {
-                SalesmanID = salesman.SalesmanID,
+                SalesmanID = salesmanId,
                 SalesmanName = salesman.SalesmanName,
                 SalesmanCode = salesman.SalesmanCode,
                 SaleMonth = month,
                 SaleYear = year,
-                PreviousYearSales = previousYearSales,
+                PreviousYearSales = previousYearSales?.TotalSaleAmount ?? 0,
                 BonusEligible = bonusEligible
             };
 
-            // Group sales by brand and class
             var salesByBrandClass = sales
                 .Where(s => modelsDict.ContainsKey(s.ModelID))
                 .GroupBy(s => new
@@ -110,7 +117,7 @@ public class CommissionService : ICommissionService
 
                 foreach (var item in brandGroup)
                 {
-                    var ruleKey = (item.BrandID, item.ClassID);
+                    var ruleKey = $"{item.BrandID}_{item.ClassID}";
                     if (!rulesDict.TryGetValue(ruleKey, out var commissionRule) || commissionRule == null)
                         continue;
 
@@ -122,19 +129,14 @@ public class CommissionService : ICommissionService
                         TotalSalesAmount = item.TotalSalesAmount
                     };
 
-                    // Calculate Fixed Commission (if price meets minimum requirement)
-                    // Fixed commission applies once per brand/class combination if model price meets threshold
                     if (item.ModelPrice >= commissionRule.MinPriceForFixedCommission)
                     {
                         classDetail.FixedCommission = commissionRule.FixedCommission;
                     }
 
-                    // Calculate Percentage Commission (% of total sales amount)
                     classDetail.PercentageCommission = item.TotalSalesAmount * (commissionRule.PercentageCommission / 100);
 
-                    // Calculate Bonus Commission (only for Class A if bonus eligible)
-                    // Bonus is 2% of total sales amount for Class A cars only
-                    if (bonusEligible && item.ClassID == ApplicationConstants.Commission.ClassAId)
+                    if (bonusEligible && item.ClassID == classAId)
                     {
                         classDetail.BonusCommission = item.TotalSalesAmount * ApplicationConstants.Commission.BonusPercentage;
                     }
@@ -146,7 +148,6 @@ public class CommissionService : ICommissionService
                     brandDetail.ClassDetails.Add(classDetail);
                     brandDetail.BrandTotalCommission += classDetail.TotalCommission;
 
-                    // Save commission calculation
                     var commissionCalc = new CommissionCalculation
                     {
                         SalesmanID = salesmanId,
@@ -161,11 +162,11 @@ public class CommissionService : ICommissionService
                         BonusCommission = classDetail.BonusCommission,
                         TotalCommission = classDetail.TotalCommission,
                         CalculatedOn = DateTime.Now,
-                        CreatedBy = 1,
+                        CreatedBy = null,
                         CreatedOn = DateTime.Now
                     };
 
-                    await _repository.SaveCommissionCalculationAsync(commissionCalc);
+                    await _repository.SaveCommissionCalculation(commissionCalc);
                 }
 
                 report.BrandDetails.Add(brandDetail);
@@ -193,16 +194,16 @@ public class CommissionService : ICommissionService
         }
     }
 
-    public async Task<ApiResponse<IEnumerable<CommissionReportDto>>> GenerateAllSalesmenCommissionReportAsync(int month, int year)
+    public async Task<ApiResponse<IEnumerable<CommissionReportDto>>> GenerateAllSalesmenCommissionReport(int month, int year)
     {
         try
         {
-            var salesmen = await _repository.GetAllSalesmenAsync();
+            var salesmen = await _repository.GetAllSalesmen();
             var reports = new List<CommissionReportDto>();
 
             foreach (var salesman in salesmen)
             {
-                var reportResponse = await GenerateCommissionReportAsync(salesman.SalesmanID, month, year);
+                var reportResponse = await GenerateCommissionReport(salesman.SalesmanID, month, year);
                 if (reportResponse.Success && reportResponse.Data != null)
                 {
                     reports.Add(reportResponse.Data);

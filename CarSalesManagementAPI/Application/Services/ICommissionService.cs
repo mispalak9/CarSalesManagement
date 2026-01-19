@@ -4,6 +4,6 @@ namespace CarSalesManagementAPI.Application.Services;
 
 public interface ICommissionService
 {
-    Task<ApiResponse<CommissionReportDto>> GenerateCommissionReportAsync(int salesmanId, int month, int year);
-    Task<ApiResponse<IEnumerable<CommissionReportDto>>> GenerateAllSalesmenCommissionReportAsync(int month, int year);
+    Task<ApiResponse<CommissionReportDto>> GenerateCommissionReport(int salesmanId, int month, int year);
+    Task<ApiResponse<IEnumerable<CommissionReportDto>>> GenerateAllSalesmenCommissionReport(int month, int year);
 }

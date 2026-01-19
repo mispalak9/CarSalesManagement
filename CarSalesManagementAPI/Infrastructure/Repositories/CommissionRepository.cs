@@ -15,21 +15,21 @@ public class CommissionRepository : ICommissionRepository
         _connectionFactory = connectionFactory;
     }
 
-    public async Task<IEnumerable<Salesman>> GetAllSalesmenAsync()
+    public async Task<IEnumerable<Salesman>> GetAllSalesmen()
     {
         using var connection = _connectionFactory.CreateConnection();
         var sql = "SELECT * FROM Salesmen WHERE IsActive = 1 ORDER BY SalesmanName";
         return await connection.QueryAsync<Salesman>(sql);
     }
 
-    public async Task<Salesman?> GetSalesmanByIdAsync(int salesmanId)
+    public async Task<Salesman?> GetSalesmanById(int salesmanId)
     {
         using var connection = _connectionFactory.CreateConnection();
         var sql = "SELECT * FROM Salesmen WHERE SalesmanID = @SalesmanId";
         return await connection.QueryFirstOrDefaultAsync<Salesman>(sql, new { SalesmanId = salesmanId });
     }
 
-    public async Task<IEnumerable<Sale>> GetSalesBySalesmanMonthYearAsync(int salesmanId, int month, int year)
+    public async Task<IEnumerable<Sale>> GetSalesBySalesmanMonthYear(int salesmanId, int month, int year)
     {
         using var connection = _connectionFactory.CreateConnection();
         var sql = @"SELECT * FROM Sales 
@@ -41,7 +41,7 @@ public class CommissionRepository : ICommissionRepository
         return await connection.QueryAsync<Sale>(sql, new { SalesmanId = salesmanId, Month = month, Year = year });
     }
 
-    public async Task<CommissionRule?> GetCommissionRuleAsync(int brandId, int classId)
+    public async Task<CommissionRule?> GetCommissionRule(int brandId, int classId)
     {
         using var connection = _connectionFactory.CreateConnection();
         var sql = @"SELECT * FROM CommissionRules 
@@ -51,14 +51,14 @@ public class CommissionRepository : ICommissionRepository
         return await connection.QueryFirstOrDefaultAsync<CommissionRule>(sql, new { BrandId = brandId, ClassId = classId });
     }
 
-    public async Task<IEnumerable<CommissionRule>> GetAllCommissionRulesAsync()
+    public async Task<IEnumerable<CommissionRule>> GetAllCommissionRules()
     {
         using var connection = _connectionFactory.CreateConnection();
         var sql = "SELECT * FROM CommissionRules WHERE IsActive = 1";
         return await connection.QueryAsync<CommissionRule>(sql);
     }
 
-    public async Task<SalesmanYearlySales?> GetSalesmanYearlySalesAsync(int salesmanId, int year)
+    public async Task<SalesmanYearlySales?> GetSalesmanYearlySales(int salesmanId, int year)
     {
         using var connection = _connectionFactory.CreateConnection();
         var sql = @"SELECT * FROM SalesmanYearlySales 
@@ -67,7 +67,7 @@ public class CommissionRepository : ICommissionRepository
         return await connection.QueryFirstOrDefaultAsync<SalesmanYearlySales>(sql, new { SalesmanId = salesmanId, Year = year });
     }
 
-    public async Task<IEnumerable<CommissionCalculation>> GetCommissionCalculationsAsync(int salesmanId, int month, int year)
+    public async Task<IEnumerable<CommissionCalculation>> GetCommissionCalculations(int salesmanId, int month, int year)
     {
         using var connection = _connectionFactory.CreateConnection();
         var sql = @"SELECT * FROM CommissionCalculations 
@@ -78,7 +78,7 @@ public class CommissionRepository : ICommissionRepository
         return await connection.QueryAsync<CommissionCalculation>(sql, new { SalesmanId = salesmanId, Month = month, Year = year });
     }
 
-    public async Task<int> SaveCommissionCalculationAsync(CommissionCalculation calculation)
+    public async Task<int> SaveCommissionCalculation(CommissionCalculation calculation)
     {
         using var connection = _connectionFactory.CreateConnection();
         
@@ -116,7 +116,7 @@ public class CommissionRepository : ICommissionRepository
         return await connection.QuerySingleAsync<int>(sql, calculation);
     }
 
-    public async Task<IEnumerable<CarModel>> GetCarModelsAsync()
+    public async Task<IEnumerable<CarModel>> GetCarModels()
     {
         using var connection = _connectionFactory.CreateConnection();
         var sql = @"SELECT cm.*, b.BrandID, b.BrandName, b.BrandCode, 
@@ -134,11 +134,11 @@ public class CommissionRepository : ICommissionRepository
                 model.CarClass = carClass;
                 return model;
             },
-            splitOn: "BrandID,ClassID"
+            splitOn: "BrandName,ClassName"
         );
     }
 
-    public async Task<IEnumerable<CarModel>> GetCarModelsByIdsAsync(IEnumerable<int> modelIds)
+    public async Task<IEnumerable<CarModel>> GetCarModelsByIds(IEnumerable<int> modelIds)
     {
         var idsList = modelIds.ToList();
         if (!idsList.Any())
@@ -161,7 +161,14 @@ public class CommissionRepository : ICommissionRepository
                 return model;
             },
             new { ModelIds = idsList },
-            splitOn: "BrandID,ClassID"
+            splitOn: "BrandName,ClassName"
         );
+    }
+
+    public async Task<IEnumerable<CarClass>> GetAllCarClasses()
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        var sql = "SELECT * FROM CarClasses WHERE IsActive = 1 ORDER BY DisplayOrder";
+        return await connection.QueryAsync<CarClass>(sql);
     }
 }

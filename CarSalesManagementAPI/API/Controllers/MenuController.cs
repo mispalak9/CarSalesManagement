@@ -20,7 +20,7 @@ public class MenuController : ControllerBase
     [HttpGet("user/{userId}")]
     public async Task<ActionResult<ApiResponse<UserMenuResponseDto>>> GetUserMenus(int userId)
     {
-        var response = await _menuService.GetUserMenusAsync(userId);
+        var response = await _menuService.GetUserMenus(userId);
 
         if (!response.Success)
         {
@@ -37,7 +37,7 @@ public class MenuController : ControllerBase
     [HttpGet("role/{roleId}")]
     public async Task<ActionResult<ApiResponse<IEnumerable<MenuDto>>>> GetMenusByRole(int roleId)
     {
-        var response = await _menuService.GetMenusByRoleIdAsync(roleId);
+        var response = await _menuService.GetMenusByRoleId(roleId);
 
         if (!response.Success)
         {
