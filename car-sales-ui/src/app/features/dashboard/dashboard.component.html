@@ -1,0 +1,32 @@
+<div class="dashboard-container">
+  <div class="dashboard-grid">
+    <div class="dashboard-card greeting-card">
+      @let user = currentUser$ | async;
+      @if (user) {
+        <h2>Welcome, {{ user.fullName }}!</h2>
+        <p class="greeting-text">Manage your car sales operations effectively</p>
+      }
+    </div>
+
+    <div class="dashboard-card">
+      <div class="card-icon">🚗</div>
+      <h3>Car Models</h3>
+      <p>Manage your car model inventory</p>
+      <a routerLink="/car-models" class="card-link">Go to Car Models →</a>
+    </div>
+
+    <div class="dashboard-card">
+      <div class="card-icon">📊</div>
+      <h3>Commission Report</h3>
+      <p>View salesman commission details</p>
+      <a routerLink="/commission-report" class="card-link">View Report →</a>
+    </div>
+
+    <div class="dashboard-card">
+      <div class="card-icon">⚙️</div>
+      <h3>System Information</h3>
+      <p>Application version and details</p>
+      <a href="javascript:void(0)" class="card-link">About →</a>
+    </div>
+  </div>
+</div>
