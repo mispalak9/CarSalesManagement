@@ -1,6 +1,0 @@
-@CarSalesManagementAPI_HostAddress = http://localhost:5129
-
-GET {{CarSalesManagementAPI_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
