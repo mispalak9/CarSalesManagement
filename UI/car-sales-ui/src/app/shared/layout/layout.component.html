@@ -1,0 +1,83 @@
+<div class="app-container">
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h2>Car Sales</h2>
+    </div>
+
+    @if (menuLoading$ | async) {
+      <div class="menu-status">Loading menu...</div>
+    }
+    @else {
+      @let menuErrorValue = menuError$ | async;
+      @if (menuErrorValue) {
+        <div class="menu-status error">
+          <p>{{ menuErrorValue }}</p>
+          <button class="retry" (click)="refreshMenu()">Retry</button>
+        </div>
+      }
+      @else {
+        <ul class="menu-list">
+        @for (menu of menuItems; track menu.menuID) {
+          <li class="menu-item">
+            @if (hasChildren(menu)) {
+              <button
+                class="menu-link expandable"
+                (click)="toggleMenu(menu.menuID)"
+                [class.expanded]="isMenuExpanded(menu.menuID)"
+              >
+                @if (menu.iconClass) {
+                  <span class="menu-icon" [ngClass]="menu.iconClass"></span>
+                }
+                <span class="menu-text">{{ menu.menuTitle || menu.menuName }}</span>
+                <span class="expand-icon">▼</span>
+              </button>
+              @if (isMenuExpanded(menu.menuID)) {
+                <ul class="submenu">
+                  @for (submenu of menu.children; track submenu.menuID) {
+                    <li>
+                      <a [routerLink]="submenu.menuUrl" class="submenu-link">
+                        {{ submenu.menuTitle || submenu.menuName }}
+                      </a>
+                    </li>
+                  }
+                </ul>
+              }
+            }
+            @else {
+              <a [routerLink]="menu.menuUrl" class="menu-link">
+                @if (menu.iconClass) {
+                  <span class="menu-icon" [ngClass]="menu.iconClass"></span>
+                }
+                <span class="menu-text">{{ menu.menuTitle || menu.menuName }}</span>
+              </a>
+            }
+          </li>
+        }
+      </ul>
+      }
+    }
+  </nav>
+
+  <div class="main-content">
+    <header class="top-bar">
+      <div class="header-left">
+        @if (canGoBack) {
+          <button class="btn-back" (click)="goBack()" title="Go back">← Back</button>
+        }
+        <h3>{{ pageTitle }}</h3>
+      </div>
+      <div class="header-right">
+        @let userValue = currentUser$ | async;
+        @if (userValue) {
+          <span class="user-name">{{ userValue.fullName }}</span>
+          <button class="btn-logout" (click)="logout()">Logout</button>
+        }
+      </div>
+    </header>
+
+    <div class="content">
+      <app-notifications></app-notifications>
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

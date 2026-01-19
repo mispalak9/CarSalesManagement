@@ -1,0 +1,221 @@
+<div class="container">
+  @if (isLoading) {
+    <div class="loading">
+      <p>Loading...</p>
+    </div>
+  }
+  @else {
+    <form [formGroup]="carModelForm" (ngSubmit)="onSubmit()" class="form-container">
+      <div class="form-section">
+        <h3>Basic Information</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="brand">Brand <span class="required">*</span></label>
+            <select id="brand" formControlName="brandID" class="form-control">
+              <option value="">-- Select Brand --</option>
+              @for (brand of brands; track brand.brandID) {
+                <option [value]="brand.brandID">{{ brand.brandName }}</option>
+              }
+            </select>
+            @if (carModelForm.get('brandID')?.invalid && carModelForm.get('brandID')?.touched) {
+              <span class="error-message">Brand is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="class">Class <span class="required">*</span></label>
+            <select id="class" formControlName="classID" class="form-control">
+              <option value="">-- Select Class --</option>
+              @for (cls of classes; track cls.classID) {
+                <option [value]="cls.classID">{{ cls.className }}</option>
+              }
+            </select>
+            @if (carModelForm.get('classID')?.invalid && carModelForm.get('classID')?.touched) {
+              <span class="error-message">Class is required</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="modelName">Model Name <span class="required">*</span></label>
+            <input
+              type="text"
+              id="modelName"
+              formControlName="modelName"
+              class="form-control"
+              [class.is-invalid]="modelName?.invalid && modelName?.touched"
+              placeholder="Enter model name"
+            />
+            @if (modelName?.invalid && modelName?.touched) {
+              <span class="error-message">Model name is required and must be at least 3 characters</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="modelCode">Model Code <span class="required">*</span></label>
+            <input
+              type="text"
+              id="modelCode"
+              formControlName="modelCode"
+              class="form-control"
+              [class.is-invalid]="modelCode?.invalid && modelCode?.touched"
+              placeholder="10 alphanumeric characters"
+              maxlength="10"
+              (input)="onModelCodeInput($event)"
+              appAlphanumeric
+            />
+            @if (modelCode?.invalid && modelCode?.touched) {
+              <span class="error-message">Code must be exactly 10 alphanumeric characters</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="price">Price <span class="required">*</span></label>
+            <input
+              type="number"
+              id="price"
+              formControlName="price"
+              class="form-control"
+              [class.is-invalid]="price?.invalid && price?.touched"
+              placeholder="Enter price"
+              step="0.01"
+              min="0.01"
+            />
+            @if (price?.invalid && price?.touched) {
+              <span class="error-message">Price is required and must be a positive number</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="manufacturing">Date of Manufacturing <span class="required">*</span></label>
+            <input
+              type="date"
+              id="manufacturing"
+              formControlName="dateOfManufacturing"
+              class="form-control"
+              [class.is-invalid]="carModelForm.get('dateOfManufacturing')?.invalid && carModelForm.get('dateOfManufacturing')?.touched"
+            />
+            @if (carModelForm.get('dateOfManufacturing')?.invalid && carModelForm.get('dateOfManufacturing')?.touched) {
+              <span class="error-message">Manufacturing date is required</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sortOrder">Sort Order</label>
+            <input
+              type="number"
+              id="sortOrder"
+              formControlName="sortOrder"
+              class="form-control"
+              placeholder="Enter sort order"
+              min="0"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="isActive">
+              <input
+                type="checkbox"
+                id="isActive"
+                formControlName="isActive"
+                class="checkbox-control"
+              />
+              <span>Active</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Description <span class="required">*</span></h3>
+        <textarea 
+          formControlName="description" 
+          class="form-control" 
+          rows="8" 
+          placeholder="Enter description (HTML tags supported)"
+        ></textarea>
+        @if (carModelForm.get('description')?.invalid && carModelForm.get('description')?.touched) {
+          <span class="error-message">Description is required</span>
+        }
+      </div>
+
+      <div class="form-section">
+        <h3>Features <span class="required">*</span></h3>
+        <textarea 
+          formControlName="features" 
+          class="form-control" 
+          rows="8" 
+          placeholder="Enter features (HTML tags supported)"
+        ></textarea>
+        @if (carModelForm.get('features')?.invalid && carModelForm.get('features')?.touched) {
+          <span class="error-message">Features are required</span>
+        }
+      </div>
+
+      <div class="form-section">
+        <h3>Images <span class="required">*</span></h3>
+        <div class="image-upload">
+          <label for="imageInput" class="upload-label">
+            Click to upload images (Max 5MB each)
+            <span class="upload-icon">📁</span>
+          </label>
+          <input
+            type="file"
+            id="imageInput"
+            multiple
+            accept="image/*"
+            (change)="onImageSelect($event)"
+            class="file-input"
+          />
+        </div>
+
+        @if (uploadedImages.length > 0) {
+          <div class="images-preview">
+            <h4>Uploaded Images</h4>
+            <div class="images-grid">
+              @for (image of uploadedImages; track $index) {
+                <div class="image-item">
+                  <img [src]="image.preview || image.imagePath || image.imageUrl" [alt]="'Image ' + ($index + 1)" />
+                  <div class="image-actions">
+                    @if (image.imageID) {
+                      <button
+                        type="button"
+                        (click)="setDefaultImage($index)"
+                        class="btn-small"
+                        [class.active]="image.isDefault"
+                      >
+                        Default
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      (click)="removeImage($index)"
+                      class="btn-small btn-danger"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+          {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Model' : 'Create Model') }}
+        </button>
+        <button type="button" (click)="cancel()" class="btn btn-secondary">
+          Cancel
+        </button>
+      </div>
+    </form>
+  }
+</div>
