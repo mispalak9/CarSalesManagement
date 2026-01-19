@@ -2,7 +2,7 @@
 
 <div align="center">
   <img src="https://img.shields.io/badge/.NET%20Core-8.0-blue" alt=".NET Core">
-  <img src="https://img.shields.io/badge/Angular-14-red" alt="Angular">
+  <img src="https://img.shields.io/badge/Angular-red" alt="Angular">
   <img src="https://img.shields.io/badge/Architecture-Clean%20Architecture-green" alt="Architecture">
   <img src="https://img.shields.io/badge/Database-MS%20SQL-orange" alt="MS SQL">
   <img src="https://img.shields.io/badge/Status-Production%20Ready-brightgreen" alt="Status">
