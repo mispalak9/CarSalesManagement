@@ -1,0 +1,95 @@
+-- SP1: Calculate commission for a salesman/month
+CREATE OR ALTER PROCEDURE dbo.usp_CalculateCommission
+    @SalesmanID INT,
+    @Month INT,
+    @Year INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DELETE FROM dbo.CommissionCalculations 
+    WHERE SalesmanID=@SalesmanID AND SaleMonth=@Month AND SaleYear=@Year;
+
+    INSERT INTO dbo.CommissionCalculations
+    (SalesmanID,SaleMonth,SaleYear,BrandID,ClassID,TotalCarsSold,TotalSalesAmount,
+     FixedCommission,PercentageCommission,BonusCommission,TotalCommission,CreatedBy)
+    SELECT 
+        s.SalesmanID,
+        @Month,
+        @Year,
+        m.BrandID,
+        m.ClassID,
+        SUM(s.Quantity) AS TotalCarsSold,
+        SUM(s.TotalAmount) AS TotalSalesAmount,
+        SUM(CASE WHEN m.Price >= cr.MinPriceForFixedCommission THEN cr.FixedCommission * s.Quantity ELSE 0 END) AS FixedComm,
+        SUM((m.Price * s.Quantity * cr.PercentageCommission) / 100) AS PctComm,
+        SUM(CASE 
+            WHEN m.ClassID = (SELECT ClassID FROM dbo.CarClasses WHERE ClassCode='A') 
+                 AND EXISTS(SELECT 1 FROM dbo.SalesmanYearlySales WHERE SalesmanID=s.SalesmanID AND SaleYear=@Year-1 AND BonusEligible=1)
+            THEN (m.Price * s.Quantity * 2) / 100
+            ELSE 0 
+        END) AS BonusComm,
+        0 AS Total
+    FROM dbo.Sales s
+    JOIN dbo.CarModels m ON s.ModelID=m.ModelID
+    JOIN dbo.CommissionRules cr ON m.BrandID=cr.BrandID AND m.ClassID=cr.ClassID
+    WHERE s.SalesmanID=@SalesmanID AND s.SaleMonth=@Month AND s.SaleYear=@Year AND s.Status='Completed'
+    GROUP BY s.SalesmanID,m.BrandID,m.ClassID;
+
+    UPDATE dbo.CommissionCalculations
+    SET TotalCommission = FixedCommission + PercentageCommission + BonusCommission
+    WHERE SalesmanID=@SalesmanID AND SaleMonth=@Month AND SaleYear=@Year;
+END;
+GO
+
+-- SP2: Get commission report
+CREATE OR ALTER PROCEDURE dbo.usp_GetCommissionReport
+    @Month INT = NULL,
+    @Year INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        sm.SalesmanName,
+        b.BrandName,
+        cc.ClassName,
+        c.TotalCarsSold,
+        c.TotalSalesAmount,
+        c.FixedCommission,
+        c.PercentageCommission,
+        c.BonusCommission,
+        c.TotalCommission
+    FROM dbo.CommissionCalculations c
+    JOIN dbo.Salesmen sm ON c.SalesmanID=sm.SalesmanID
+    JOIN dbo.Brands b ON c.BrandID=b.BrandID
+    JOIN dbo.CarClasses cc ON c.ClassID=cc.ClassID
+    WHERE (@Month IS NULL OR c.SaleMonth=@Month)
+      AND (@Year IS NULL OR c.SaleYear=@Year)
+    ORDER BY sm.SalesmanName, b.BrandName, cc.DisplayOrder;
+END;
+GO
+
+-- SP3: Summary by salesman
+CREATE OR ALTER PROCEDURE dbo.usp_GetSalesmanCommissionSummary
+    @SalesmanID INT = NULL,
+    @Year INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        sm.SalesmanName,
+        c.SaleYear,
+        COUNT(DISTINCT CONCAT(c.SaleMonth,c.BrandID,c.ClassID)) AS Entries,
+        SUM(c.TotalCarsSold) AS TotalCars,
+        SUM(c.TotalSalesAmount) AS TotalSales,
+        SUM(c.TotalCommission) AS TotalCommission
+    FROM dbo.CommissionCalculations c
+    JOIN dbo.Salesmen sm ON c.SalesmanID=sm.SalesmanID
+    WHERE (@SalesmanID IS NULL OR c.SalesmanID=@SalesmanID)
+      AND (@Year IS NULL OR c.SaleYear=@Year)
+    GROUP BY sm.SalesmanName, c.SaleYear
+    ORDER BY c.SaleYear DESC, TotalCommission DESC;
+END;
+GO
