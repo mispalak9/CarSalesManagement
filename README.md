@@ -25,7 +25,7 @@
 </p>
 
 
-Car Sales Management System is a full-stack web application developed using .NET Core for backend, Angular 14 for frontend, and Microsoft SQL Server as the database. The system manages car models, users, roles, and sales commission calculations.
+Car Sales Management System is a full-stack web application developed using .NET Core for backend, Angular 14 for frontend, and Microsoft MsSql-SQL Server as the database. The system manages car models, users, roles, and sales commission calculations.
 
 ---
 
